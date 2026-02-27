@@ -45,10 +45,6 @@ class Product
 
     #[ORM\Column(nullable: true)]
     #[Groups(['product:read', 'product:write'])]
-    private ?int $quantity = null;
-
-    #[ORM\Column(nullable: true)]
-    #[Groups(['product:read', 'product:write'])]
     private ?int $duration = null;
 
     #[ORM\OneToMany(targetEntity: Price::class, mappedBy: 'product')]
@@ -98,18 +94,6 @@ class Product
     public function setDescription(?string $description): static
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    public function getQuantity(): ?int
-    {
-        return $this->quantity;
-    }
-
-    public function setQuantity(?int $quantity): static
-    {
-        $this->quantity = $quantity;
 
         return $this;
     }

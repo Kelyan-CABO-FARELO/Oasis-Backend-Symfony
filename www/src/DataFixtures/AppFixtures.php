@@ -81,7 +81,6 @@ class AppFixtures extends Fixture
             $config = $types[array_rand($types)];
             $mh = new Product();
             $mh->setTitle($config['title'] . " n°" . $i);
-            $mh->setQuantity(1);
             $mh->setDescription("Mobile-home tout confort.");
 
             if ($i <= 30) {
@@ -106,7 +105,6 @@ class AppFixtures extends Fixture
             $config = $types[array_rand($types)];
             $car = new Product();
             $car->setTitle($config['title'] . " n°" . $i);
-            $car->setQuantity(1);
 
             $this->addPriceToProduct($manager, $car, $config['price']);
             $this->addMediaToProduct($manager, $car, $config['img']);
@@ -125,7 +123,6 @@ class AppFixtures extends Fixture
             $config = $types[array_rand($types)];
             $emp = new Product();
             $emp->setTitle($config['title'] . " n°" . $i);
-            $emp->setQuantity(1);
 
             $this->addPriceToProduct($manager, $emp, $config['price']);
             $this->addMediaToProduct($manager, $emp, $config['img']);
@@ -136,14 +133,18 @@ class AppFixtures extends Fixture
     private function loadServicesPiscine(ObjectManager $manager): void
     {
         $services = [
-            ['title' => 'Accès Piscine Enfant', 'price' => 100, 'img' => 'piscine.jpg'],
-            ['title' => 'Accès Piscine Adulte', 'price' => 150, 'img' => 'piscine.jpg'],
+            ['title' => 'Accès Piscine Enfant - 1 jour', 'price' => 100, 'duration' => 1, 'img' => 'piscine.jpg'],
+            ['title' => 'Accès Piscine Adulte - 1 jour', 'price' => 150, 'duration' => 1, 'img' => 'piscine.jpg'],
+            ['title' => 'Accès Piscine Enfant - 5 jours', 'price' => 500, 'duration' => 5, 'img' => 'piscine.jpg'],
+            ['title' => 'Accès Piscine Adulte - 5 jours', 'price' => 750, 'duration' => 5, 'img' => 'piscine.jpg'],
+            ['title' => 'Accès Piscine Enfant - 10 jours', 'price' => 1000, 'duration' => 10, 'img' => 'piscine.jpg'],
+            ['title' => 'Accès Piscine Adulte - 10 jours', 'price' => 1500, 'duration' => 10, 'img' => 'piscine.jpg'],
         ];
 
         foreach ($services as $s) {
             $p = new Product();
             $p->setTitle($s['title']);
-            $p->setQuantity(999);
+            $p->setDuration($s['duration']);
             $this->addPriceToProduct($manager, $p, $s['price']);
             $this->addMediaToProduct($manager, $p, $s['img']);
             $manager->persist($p);
@@ -160,7 +161,6 @@ class AppFixtures extends Fixture
         foreach ($taxes as $t) {
             $p = new Product();
             $p->setTitle($t['title']);
-            $p->setQuantity(999);
             $this->addPriceToProduct($manager, $p, $t['price']);
             $manager->persist($p);
         }
