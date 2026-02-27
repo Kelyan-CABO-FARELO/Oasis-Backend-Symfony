@@ -2,53 +2,66 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\ProductRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ApiResource(
+    normalizationContext: ['groups' => ['product:read']],
+    denormalizationContext: ['groups' => ['product:write']],
+    operations: [
+        new GetCollection(),
+        new Get(),
+        new Post(security: "is_granted('ROLE_ADMIN')"),
+        new Put(security: "is_granted('ROLE_ADMIN')"),
+        new Delete(security: "is_granted('ROLE_ADMIN')")
+    ]
+)]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['product:read', 'reservation:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 200)]
+    #[Groups(['product:read', 'product:write', 'reservation:read'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['product:read', 'product:write'])]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['product:read', 'product:write'])]
     private ?int $quantity = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['product:read', 'product:write'])]
     private ?int $duration = null;
 
-    /**
-     * @var Collection<int, Price>
-     */
     #[ORM\OneToMany(targetEntity: Price::class, mappedBy: 'product')]
+    #[Groups(['product:read', 'product:write'])]
     private Collection $prices;
 
-    /**
-     * @var Collection<int, Media>
-     */
     #[ORM\ManyToMany(targetEntity: Media::class, mappedBy: 'product')]
+    #[Groups(['product:read', 'product:write'])]
     private Collection $media;
 
-    /**
-     * @var Collection<int, User>
-     */
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'products')]
     private Collection $user;
 
-    /**
-     * @var Collection<int, Reservation>
-     */
     #[ORM\ManyToMany(targetEntity: Reservation::class, inversedBy: 'products')]
     private Collection $reservation;
 
@@ -113,9 +126,6 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection<int, Price>
-     */
     public function getPrices(): Collection
     {
         return $this->prices;
@@ -134,7 +144,6 @@ class Product
     public function removePrice(Price $price): static
     {
         if ($this->prices->removeElement($price)) {
-            // set the owning side to null (unless already changed)
             if ($price->getProduct() === $this) {
                 $price->setProduct(null);
             }
@@ -143,9 +152,6 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection<int, Media>
-     */
     public function getMedia(): Collection
     {
         return $this->media;
@@ -170,9 +176,6 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
     public function getUser(): Collection
     {
         return $this->user;
@@ -194,9 +197,6 @@ class Product
         return $this;
     }
 
-    /**
-     * @return Collection<int, Reservation>
-     */
     public function getReservation(): Collection
     {
         return $this->reservation;

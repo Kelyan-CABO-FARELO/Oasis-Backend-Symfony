@@ -2,38 +2,60 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\ReservationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+#[ApiResource(
+    normalizationContext: ['groups' => ['reservation:read']],
+    denormalizationContext: ['groups' => ['reservation:write']],
+    operations: [
+        new GetCollection(security: "is_granted('ROLE_USER')"),
+        new Get(security: "is_granted('ROLE_ADMIN') or object.getUser() == user"),
+        new Post(security: "is_granted('ROLE_USER')"),
+        new Put(security: "is_granted('ROLE_ADMIN')"),
+        new Delete(security: "is_granted('ROLE_ADMIN') or object.getUser() == user")
+    ]
+)]
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 class Reservation
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['reservation:read'])]
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(['reservation:read', 'reservation:write'])]
     private ?\DateTime $startDate = null;
 
     #[ORM\Column]
+    #[Groups(['reservation:read', 'reservation:write'])]
     private ?\DateTime $endDate = null;
 
     #[ORM\Column]
+    #[Groups(['reservation:read', 'reservation:write'])]
     private ?int $nbChildren = null;
 
     #[ORM\Column]
+    #[Groups(['reservation:read', 'reservation:write'])]
     private ?int $nbAdult = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
+    #[Groups(['reservation:read', 'reservation:write'])]
     private ?User $user = null;
 
-    /**
-     * @var Collection<int, Product>
-     */
     #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'reservation')]
+    #[Groups(['reservation:read', 'reservation:write'])]
     private Collection $products;
 
     public function __construct()
@@ -106,9 +128,6 @@ class Reservation
         return $this;
     }
 
-    /**
-     * @return Collection<int, Product>
-     */
     public function getProducts(): Collection
     {
         return $this->products;

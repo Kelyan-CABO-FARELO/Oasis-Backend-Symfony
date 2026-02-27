@@ -8,7 +8,26 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Delete;
+use Symfony\Component\Serializer\Annotation\Groups;
+use App\State\UserPasswordHasherProcessor;
 
+#[ApiResource(
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']],
+    operations: [
+        new GetCollection(security: "is_granted('ROLE_ADMIN')"),
+        new Get(security: "is_granted('ROLE_ADMIN') or object == user"),
+        new Post(processor: UserPasswordHasherProcessor::class),
+        new Put(security: "is_granted('ROLE_ADMIN') or object == user"),
+        new Delete(security: "is_granted('ROLE_ADMIN')")
+    ]
+)]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -16,59 +35,60 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Groups(['user:read', 'user:write', 'reservation:read'])]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
+    #[Groups(['user:write'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['user:read', 'user:write', 'reservation:read'])]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 180)]
+    #[Groups(['user:read', 'user:write', 'reservation:read'])]
     private ?string $lastname = null;
 
     #[ORM\Column(length: 15, nullable: true)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $mobile = null;
 
     #[ORM\Column]
+    #[Groups(['user:read', 'user:write'])]
     private ?\DateTime $createdAt = null;
 
     #[ORM\Column]
+    #[Groups(['user:read', 'user:write'])]
     private ?\DateTime $updatedAt = null;
 
     #[ORM\Column]
+    #[Groups(['user:read', 'user:write'])]
     private ?bool $isActive = null;
 
     #[ORM\Column]
+    #[Groups(['user:read', 'user:write'])]
     private ?bool $isOwner = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user:read', 'user:write'])]
     private ?\DateTime $contractDate = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user:read', 'user:write'])]
     private ?bool $consentDataRetention = null;
 
-    /**
-     * @var Collection<int, Reservation>
-     */
     #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'user')]
     private Collection $reservations;
 
-    /**
-     * @var Collection<int, Product>
-     */
     #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'user')]
     private Collection $products;
 
@@ -95,31 +115,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
-        // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
     }
 
-    /**
-     * @param list<string> $roles
-     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -127,9 +135,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @see PasswordAuthenticatedUserInterface
-     */
     public function getPassword(): ?string
     {
         return $this->password;
@@ -142,9 +147,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * Ensure the session doesn't contain actual password hashes by CRC32C-hashing them, as supported since Symfony 7.3.
-     */
     public function __serialize(): array
     {
         $data = (array) $this;
@@ -261,9 +263,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Reservation>
-     */
     public function getReservations(): Collection
     {
         return $this->reservations;
@@ -282,7 +281,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeReservation(Reservation $reservation): static
     {
         if ($this->reservations->removeElement($reservation)) {
-            // set the owning side to null (unless already changed)
             if ($reservation->getUser() === $this) {
                 $reservation->setUser(null);
             }
@@ -291,9 +289,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Product>
-     */
     public function getProducts(): Collection
     {
         return $this->products;

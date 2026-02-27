@@ -42,10 +42,19 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        # 1. On autorise la connexion
+        - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
+
+        # 2. On autorise l'inscription (POST)
+        - { path: ^/api/users, roles: PUBLIC_ACCESS, methods: [ POST ] }
+
+        # 3. LES LIGNES POUR DÉBLOQUER SWAGGER :
+        - { path: ^/api$, roles: PUBLIC_ACCESS } # <-- Autorise exactement /api
+        - { path: ^/api/docs, roles: PUBLIC_ACCESS } # <-- Autorise l'interface visuelle
+        - { path: ^/api/contexts, roles: PUBLIC_ACCESS } # <-- Nécessaire pour le fonctionnement interne de Swagger
+
+        # 4. On verrouille TOUT le reste
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
 
 when@test:
     security:
