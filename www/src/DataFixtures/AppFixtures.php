@@ -71,10 +71,10 @@ class AppFixtures extends Fixture
     private function loadMobileHomes(ObjectManager $manager, array $owners): void
     {
         $types = [
-            ['title' => 'M-H 3 personnes', 'price' => 2000, 'img' => 'mh_3.jpg'],
-            ['title' => 'M-H 4 personnes', 'price' => 2400, 'img' => 'mh_4.jpg'],
-            ['title' => 'M-H 5 personnes', 'price' => 2700, 'img' => 'mh_5.jpg'],
-            ['title' => 'M-H 6-8 personnes', 'price' => 3400, 'img' => 'mh_large.jpg'],
+            ['title' => 'M-H 3 personnes', 'price' => 2000, 'img' => 'mh-3.png'],
+            ['title' => 'M-H 4 personnes', 'price' => 2400, 'img' => 'mh-4.png'],
+            ['title' => 'M-H 5 personnes', 'price' => 2700, 'img' => 'mh-5.png'],
+            ['title' => 'M-H 6-8 personnes', 'price' => 3400, 'img' => 'mh-68.png'],
         ];
 
         for ($i = 1; $i <= 50; $i++) {
@@ -96,9 +96,9 @@ class AppFixtures extends Fixture
     private function loadCaravanes(ObjectManager $manager): void
     {
         $types = [
-            ['title' => 'Caravane 2 places', 'price' => 1500, 'img' => 'car_2.jpg'],
-            ['title' => 'Caravane 4 places', 'price' => 1800, 'img' => 'car_4.jpg'],
-            ['title' => 'Caravane 6 places', 'price' => 2400, 'img' => 'car_6.jpg'],
+            ['title' => 'Caravane 2 places', 'price' => 1500, 'img' => 'c-2.png'],
+            ['title' => 'Caravane 4 places', 'price' => 1800, 'img' => 'c-4.png'],
+            ['title' => 'Caravane 6 places', 'price' => 2400, 'img' => 'c-6.png'],
         ];
 
         for ($i = 1; $i <= 10; $i++) {
@@ -115,8 +115,8 @@ class AppFixtures extends Fixture
     private function loadEmplacements(ObjectManager $manager): void
     {
         $types = [
-            ['title' => 'Emplacement 8 m²', 'price' => 1200, 'img' => 'emp_small.jpg'],
-            ['title' => 'Emplacement 12 m²', 'price' => 1400, 'img' => 'emp_large.jpg'],
+            ['title' => 'Emplacement 8 m²', 'price' => 1200, 'img' => 'e-8.png'],
+            ['title' => 'Emplacement 12 m²', 'price' => 1400, 'img' => 'e-12.png'],
         ];
 
         for ($i = 1; $i <= 30; $i++) {
@@ -133,12 +133,12 @@ class AppFixtures extends Fixture
     private function loadServicesPiscine(ObjectManager $manager): void
     {
         $services = [
-            ['title' => 'Accès Piscine Enfant - 1 jour', 'price' => 100, 'duration' => 1, 'img' => 'piscine.jpg'],
-            ['title' => 'Accès Piscine Adulte - 1 jour', 'price' => 150, 'duration' => 1, 'img' => 'piscine.jpg'],
-            ['title' => 'Accès Piscine Enfant - 5 jours', 'price' => 500, 'duration' => 5, 'img' => 'piscine.jpg'],
-            ['title' => 'Accès Piscine Adulte - 5 jours', 'price' => 750, 'duration' => 5, 'img' => 'piscine.jpg'],
-            ['title' => 'Accès Piscine Enfant - 10 jours', 'price' => 1000, 'duration' => 10, 'img' => 'piscine.jpg'],
-            ['title' => 'Accès Piscine Adulte - 10 jours', 'price' => 1500, 'duration' => 10, 'img' => 'piscine.jpg'],
+            ['title' => 'Accès Piscine Enfant - 1 jour', 'price' => 100, 'duration' => 1, 'img' => 'pool-kids.png'],
+            ['title' => 'Accès Piscine Adulte - 1 jour', 'price' => 150, 'duration' => 1, 'img' => 'pool-adults.png'],
+            ['title' => 'Accès Piscine Enfant - 5 jours', 'price' => 500, 'duration' => 5, 'img' => 'pool-kids.png'],
+            ['title' => 'Accès Piscine Adulte - 5 jours', 'price' => 750, 'duration' => 5, 'img' => 'pool-adults.png'],
+            ['title' => 'Accès Piscine Enfant - 10 jours', 'price' => 1000, 'duration' => 10, 'img' => 'pool-kids.png'],
+            ['title' => 'Accès Piscine Adulte - 10 jours', 'price' => 1500, 'duration' => 10, 'img' => 'pool-adults.png'],
         ];
 
         foreach ($services as $s) {
