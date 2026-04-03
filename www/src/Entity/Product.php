@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use App\Repository\ProductRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -16,15 +16,22 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ApiResource(
-    normalizationContext: ['groups' => ['product:read']],
-    denormalizationContext: ['groups' => ['product:write']],
+
     operations: [
-        new GetCollection(),
-        new Get(),
+        //  AJOUTEZ CECI POUR FORCER LA LECTURE DES DONNÉES DANS LA LISTE
+        new GetCollection(normalizationContext: ['groups' => ['product:read']]),
+
+        //  AJOUTEZ CECI POUR FORCER LA LECTURE DES DONNÉES D'UN SEUL PRODUIT
+        new Get(normalizationContext: ['groups' => ['product:read']]),
+
         new Post(security: "is_granted('ROLE_ADMIN')"),
         new Put(security: "is_granted('ROLE_ADMIN')"),
         new Delete(security: "is_granted('ROLE_ADMIN')")
-    ]
+    ],
+
+    normalizationContext: ['groups' => ['product:read']],
+    denormalizationContext: ['groups' => ['product:write']],
+    paginationEnabled: false
 )]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product

@@ -42,20 +42,23 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # 1. On autorise la connexion
+        # On autorise la connexion
         - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
 
-        # 2. On autorise l'inscription (POST)
+        # On autorise l'inscription (POST)
         - { path: ^/api/users, roles: PUBLIC_ACCESS, methods: [ POST ] }
 
-        # 3. LES LIGNES POUR DÉBLOQUER SWAGGER :
-        - { path: ^/api$, roles: PUBLIC_ACCESS } # <-- Autorise exactement /api
-        - { path: ^/api/docs, roles: PUBLIC_ACCESS } # <-- Autorise l'interface visuelle
-        - { path: ^/api/contexts, roles: PUBLIC_ACCESS } # <-- Nécessaire pour le fonctionnement interne de Swagger
+        # LES LIGNES POUR DÉBLOQUER SWAGGER :
+        - { path: ^/api$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/docs, roles: PUBLIC_ACCESS }
+        - { path: ^/api/contexts, roles: PUBLIC_ACCESS }
 
-        # 4. On verrouille TOUT le reste
+        # Autoriser le public à voir les produits (GET uniquement)
+        - { path: ^/api/products, roles: PUBLIC_ACCESS, methods: [ GET ] }
+
+        # --- LE VERROUILLAGE GLOBAL À LA TOUTE FIN ---
+        # On verrouille TOUT le reste de l'API (doit toujours être en dernier)
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
-
 when@test:
     security:
         password_hashers:
