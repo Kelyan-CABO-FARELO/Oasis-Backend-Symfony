@@ -6,6 +6,7 @@ use App\Entity\Media;
 use App\Entity\Price;
 use App\Entity\Product;
 use App\Entity\User;
+use App\Entity\Reservation; // 👈 N'oubliez pas l'import de Reservation
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -22,12 +23,16 @@ class AppFixtures extends Fixture
         $admin = $this->loadAdmin($manager);
         $owners = $this->loadOwners($manager);
 
-        // 2. Le Catalogue
-        $this->loadMobileHomes($manager, $owners);
-        $this->loadCaravanes($manager);
-        $this->loadEmplacements($manager);
+        // 2. Le Catalogue (on stocke les résultats dans des variables)
+        $mobileHomes = $this->loadMobileHomes($manager, $owners);
+        $caravanes = $this->loadCaravanes($manager);
+        $emplacements = $this->loadEmplacements($manager);
+
         $this->loadServicesPiscine($manager);
         $this->loadTaxesSejour($manager);
+
+        // 3. Les Réservations
+        $this->loadReservations($manager, $owners, $mobileHomes, $caravanes, $emplacements);
 
         $manager->flush();
     }
@@ -41,7 +46,7 @@ class AppFixtures extends Fixture
         $admin->setFirstname('Patrick');
         $admin->setLastname('Durand');
         $admin->setCreatedAt(new \DateTime());
-        $admin->setUpdatedAt(new \DateTime()); // Ajouté pour corriger l'erreur
+        $admin->setUpdatedAt(new \DateTime());
         $admin->setIsActive(true);
         $admin->setIsOwner(false);
         $manager->persist($admin);
@@ -59,7 +64,7 @@ class AppFixtures extends Fixture
             $user->setFirstname("Proprio_$i");
             $user->setLastname("Nom_$i");
             $user->setCreatedAt(new \DateTime());
-            $user->setUpdatedAt(new \DateTime()); // Ajouté pour corriger l'erreur
+            $user->setUpdatedAt(new \DateTime());
             $user->setIsActive(true);
             $user->setIsOwner(true);
             $manager->persist($user);
@@ -68,7 +73,7 @@ class AppFixtures extends Fixture
         return $owners;
     }
 
-    private function loadMobileHomes(ObjectManager $manager, array $owners): void
+    private function loadMobileHomes(ObjectManager $manager, array $owners): array
     {
         $types = [
             ['title' => 'M-H 3 personnes', 'price' => 2000, 'img' => 'mh-3.png'],
@@ -77,6 +82,7 @@ class AppFixtures extends Fixture
             ['title' => 'M-H 6-8 personnes', 'price' => 3400, 'img' => 'mh-68.png'],
         ];
 
+        $created = [];
         for ($i = 1; $i <= 50; $i++) {
             $config = $types[array_rand($types)];
             $mh = new Product();
@@ -90,10 +96,12 @@ class AppFixtures extends Fixture
             $this->addPriceToProduct($manager, $mh, $config['price']);
             $this->addMediaToProduct($manager, $mh, $config['img']);
             $manager->persist($mh);
+            $created[] = $mh;
         }
+        return $created;
     }
 
-    private function loadCaravanes(ObjectManager $manager): void
+    private function loadCaravanes(ObjectManager $manager): array
     {
         $types = [
             ['title' => 'Caravane 2 places', 'price' => 1500, 'img' => 'c-2.png'],
@@ -101,6 +109,7 @@ class AppFixtures extends Fixture
             ['title' => 'Caravane 6 places', 'price' => 2400, 'img' => 'c-6.png'],
         ];
 
+        $created = [];
         for ($i = 1; $i <= 10; $i++) {
             $config = $types[array_rand($types)];
             $car = new Product();
@@ -109,16 +118,19 @@ class AppFixtures extends Fixture
             $this->addPriceToProduct($manager, $car, $config['price']);
             $this->addMediaToProduct($manager, $car, $config['img']);
             $manager->persist($car);
+            $created[] = $car;
         }
+        return $created;
     }
 
-    private function loadEmplacements(ObjectManager $manager): void
+    private function loadEmplacements(ObjectManager $manager): array
     {
         $types = [
             ['title' => 'Emplacement 8 m²', 'price' => 1200, 'img' => 'e-8.png'],
             ['title' => 'Emplacement 12 m²', 'price' => 1400, 'img' => 'e-12.png'],
         ];
 
+        $created = [];
         for ($i = 1; $i <= 30; $i++) {
             $config = $types[array_rand($types)];
             $emp = new Product();
@@ -127,7 +139,9 @@ class AppFixtures extends Fixture
             $this->addPriceToProduct($manager, $emp, $config['price']);
             $this->addMediaToProduct($manager, $emp, $config['img']);
             $manager->persist($emp);
+            $created[] = $emp;
         }
+        return $created;
     }
 
     private function loadServicesPiscine(ObjectManager $manager): void
@@ -163,6 +177,63 @@ class AppFixtures extends Fixture
             $p->setTitle($t['title']);
             $this->addPriceToProduct($manager, $p, $t['price']);
             $manager->persist($p);
+        }
+    }
+
+    private function loadReservations(ObjectManager $manager, array $users, array $mobileHomes, array $caravanes, array $emplacements): void
+    {
+        // --- 1. RÉSERVATIONS FIXES (Pour vos tests) ---
+
+        // Test 1 : Le 1er Mobil-Home est réservé du 10 au 20 juillet 2024
+        if (isset($mobileHomes[0])) {
+            $res1 = new Reservation();
+            $res1->setStartDate(new \DateTime('2024-07-10'));
+            $res1->setEndDate(new \DateTime('2024-07-20'));
+            $res1->setNbAdult(2);
+            $res1->setNbChildren(1);
+            $res1->setUser($users[0]);
+            $res1->addProduct($mobileHomes[0]);
+            $manager->persist($res1);
+        }
+
+        // Test 2 : La 1ère Caravane est réservée du 01 au 15 août 2024
+        if (isset($caravanes[0])) {
+            $res2 = new Reservation();
+            $res2->setStartDate(new \DateTime('2024-08-01'));
+            $res2->setEndDate(new \DateTime('2024-08-15'));
+            $res2->setNbAdult(2);
+            $res2->setNbChildren(2);
+            $res2->setUser($users[1]);
+            $res2->addProduct($caravanes[0]);
+            $manager->persist($res2);
+        }
+
+        // --- 2. RÉSERVATIONS ALÉATOIRES ---
+        $allAccommodations = array_merge($mobileHomes, $caravanes, $emplacements);
+
+        for ($i = 0; $i < 15; $i++) {
+            $res = new Reservation();
+
+            // Mois aléatoire (Juillet ou Août 2024)
+            $month = rand(7, 8);
+            // Jour de début aléatoire (entre le 1 et le 20)
+            $startDay = rand(1, 20);
+            // Durée du séjour (entre 3 et 10 jours)
+            $duration = rand(3, 10);
+
+            $startDateStr = "2024-0{$month}-" . sprintf('%02d', $startDay);
+            $endDateStr = "2024-0{$month}-" . sprintf('%02d', $startDay + $duration);
+
+            $res->setStartDate(new \DateTime($startDateStr));
+            $res->setEndDate(new \DateTime($endDateStr));
+            $res->setNbAdult(rand(1, 4));
+            $res->setNbChildren(rand(0, 3));
+
+            // On attribue un utilisateur et un hébergement au hasard
+            $res->setUser($users[array_rand($users)]);
+            $res->addProduct($allAccommodations[array_rand($allAccommodations)]);
+
+            $manager->persist($res);
         }
     }
 

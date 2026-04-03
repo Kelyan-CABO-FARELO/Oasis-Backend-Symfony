@@ -8,8 +8,10 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
-use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\ApiFilter;
+use App\Filter\AvailableProductFilter;
 use App\Repository\ProductRepository;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -33,6 +35,9 @@ use Doctrine\ORM\Mapping as ORM;
     denormalizationContext: ['groups' => ['product:write']],
     paginationEnabled: false
 )]
+
+#[ApiFilter(AvailableProductFilter::class)]
+
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
 {
