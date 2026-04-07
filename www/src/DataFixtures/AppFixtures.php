@@ -14,58 +14,34 @@ class AppFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        // Initialisation de Faker
         $faker = Factory::create('fr_FR');
-
-        // Récupération dynamique de l'année en cours
         $currentYear = (new \DateTime())->format('Y');
 
-        // Catégories
-        $categories = [
-            ['type' => 'm-h', 'title' => 'M-H 6-8 personnes', 'basePrice' => 8500],
-            ['type' => 'm-h', 'title' => 'M-H 5 pers', 'basePrice' => 7000],
-            ['type' => 'm-h', 'title' => 'M-H 4 pers', 'basePrice' => 5500],
-            ['type' => 'm-h', 'title' => 'M-H 3 pers', 'basePrice' => 4500],
-            ['type' => 'caravane', 'title' => 'Caravane 6 places', 'basePrice' => 5000],
-            ['type' => 'caravane', 'title' => 'Caravane 4 places', 'basePrice' => 4000],
-            ['type' => 'caravane', 'title' => 'Caravane 2 places', 'basePrice' => 3000],
-            ['type' => 'emplacement', 'title' => 'Emplacement 12 m²', 'basePrice' => 2500],
-            ['type' => 'emplacement', 'title' => 'Emplacement 8 m²', 'basePrice' => 1500],
-        ];
+        $globalIndex = 1;
 
-        // Génération de 90 hébergements
-        for ($i = 1; $i <= 90; $i++) {
+        // Fonction pour créer un hébergement (sans toucher aux entités !)
+        $createSpecificProduct = function($title, $basePrice, $imageName) use ($faker, $manager, $currentYear, &$globalIndex) {
             $product = new Product();
 
-            $category = $faker->randomElement($categories);
-
-            $product->setTitle($category['title'] . ' n°' . $i);
+            $product->setTitle($title . ' n°' . $globalIndex);
             $product->setDescription($faker->paragraph(3));
 
-            // 1. PRIX
+            // Prix classique
             $price = new Price();
-            $price->setPrice($category['basePrice']);
+            $price->setPrice($basePrice);
             $product->addPrice($price);
             $manager->persist($price);
 
-            // 2. IMAGE
+            // Image
             $media = new Media();
-            if ($category['type'] === 'm-h') {
-                $media->setPath('placeholder_mh.jpg');
-            } elseif ($category['type'] === 'caravane') {
-                $media->setPath('placeholder_caravan.jpg');
-            } else {
-                $media->setPath('placeholder_tent.jpg');
-            }
+            $media->setPath($imageName);
             $product->addMedium($media);
             $manager->persist($media);
 
-            // 3. RÉSERVATIONS DYNAMIQUES
+            // Réservations avec le nbAdult et nbChildren déjà prévus dans votre entité Reservation
             $nbReservations = $faker->numberBetween(0, 3);
-
             for ($r = 0; $r < $nbReservations; $r++) {
                 $reservation = new Reservation();
-
                 $startDate = $faker->dateTimeBetween("$currentYear-05-05", "$currentYear-09-25");
                 $endDate = (clone $startDate)->modify('+' . $faker->numberBetween(2, 15) . ' days');
 
@@ -73,7 +49,6 @@ class AppFixtures extends Fixture
                 $reservation->setEndDate($endDate);
                 $reservation->addProduct($product);
 
-                // 🛑 CORRECTION ICI : On ajoute des passagers aléatoires
                 $reservation->setNbAdult($faker->numberBetween(1, 4));
                 $reservation->setNbChildren($faker->numberBetween(0, 3));
 
@@ -81,7 +56,69 @@ class AppFixtures extends Fixture
             }
 
             $manager->persist($product);
+            $globalIndex++;
+        };
+
+        // ==========================================
+        // 1. LES 50 MOBIL-HOMES (IDs 1 à 50)
+        // ==========================================
+        for ($i = 0; $i < 14; $i++) {
+            $createSpecificProduct('M-H 3 pers', 4500, 'placeholder_mh.jpg');
         }
+        for ($i = 0; $i < 13; $i++) {
+            $createSpecificProduct('M-H 4 pers', 5500, 'placeholder_mh.jpg');
+        }
+        for ($i = 0; $i < 17; $i++) {
+            $createSpecificProduct('M-H 5 pers', 7000, 'placeholder_mh.jpg');
+        }
+        for ($i = 0; $i < 6; $i++) {
+            $createSpecificProduct('M-H 6-8 personnes', 8500, 'placeholder_mh.jpg');
+        }
+
+        // ==========================================
+        // 2. LES 10 CARAVANES (IDs 51 à 60)
+        // ==========================================
+        for ($i = 0; $i < 5; $i++) {
+            $createSpecificProduct('Caravane 6 places', 5000, 'placeholder_caravan.jpg');
+        }
+        for ($i = 0; $i < 2; $i++) {
+            $createSpecificProduct('Caravane 4 places', 4000, 'placeholder_caravan.jpg');
+        }
+        for ($i = 0; $i < 3; $i++) {
+            $createSpecificProduct('Caravane 2 places', 3000, 'placeholder_caravan.jpg');
+        }
+
+        // ==========================================
+        // 3. LES 30 EMPLACEMENTS NUS (IDs 61 à 90)
+        // ==========================================
+        for ($i = 0; $i < 19; $i++) {
+            $createSpecificProduct('Emplacement 8 m²', 1500, 'placeholder_tent.jpg');
+        }
+        for ($i = 0; $i < 11; $i++) {
+            $createSpecificProduct('Emplacement 12 m²', 2500, 'placeholder_tent.jpg');
+        }
+
+        // ==========================================
+        // 4. LES EXTRAS (En tant que Produits, à la fin)
+        // ==========================================
+        $createExtra = function($title, $priceValue, $desc) use ($manager) {
+            $extra = new Product();
+            $extra->setTitle($title);
+            $extra->setDescription($desc);
+
+            $price = new Price();
+            $price->setPrice($priceValue);
+            $extra->addPrice($price);
+
+            $manager->persist($price);
+            $manager->persist($extra);
+        };
+
+        // Création de vos tarifs annexes sans toucher aux entités !
+        $createExtra('Taxe de séjour', 150, 'Taxe de séjour par nuitée et par adulte.');
+        $createExtra('Accès piscine', 500, 'Accès illimité à l\'espace aquatique.');
+        $createExtra('Tarif Adulte', 1500, 'Tarif par nuitée pour un adulte supplémentaire sur emplacement.');
+        $createExtra('Tarif Enfant', 1000, 'Tarif par nuitée pour un enfant supplémentaire sur emplacement.');
 
         $manager->flush();
     }
