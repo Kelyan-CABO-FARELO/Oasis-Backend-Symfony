@@ -50,6 +50,9 @@ class AppFixtures extends Fixture
                 $reservation->setNbAdult($faker->numberBetween(1, 4));
                 $reservation->setNbChildren($faker->numberBetween(0, 3));
 
+                // On dit que ces fausses réservations sont déjà payées
+                $reservation->setIsPaid(true);
+
                 $manager->persist($reservation);
             }
 

@@ -66,6 +66,9 @@ class Reservation
     #[Groups(['reservation:read', 'reservation:write'])]
     private Collection $products;
 
+    #[ORM\Column]
+    private ?bool $isPaid = null;
+
     public function __construct()
     {
         $this->products = new ArrayCollection();
@@ -156,6 +159,18 @@ class Reservation
         if ($this->products->removeElement($product)) {
             $product->removeReservation($this);
         }
+
+        return $this;
+    }
+
+    public function isPaid(): ?bool
+    {
+        return $this->isPaid;
+    }
+
+    public function setIsPaid(bool $isPaid): static
+    {
+        $this->isPaid = $isPaid;
 
         return $this;
     }
