@@ -19,14 +19,13 @@ class AppFixtures extends Fixture
 
         $globalIndex = 1;
 
-        // Fonction pour créer un hébergement (sans toucher aux entités !)
+        // 👇 Plus besoin de $adultPrice et $childPrice, l'hébergement a un prix unique par nuit !
         $createSpecificProduct = function($title, $basePrice, $imageName) use ($faker, $manager, $currentYear, &$globalIndex) {
             $product = new Product();
-
             $product->setTitle($title . ' n°' . $globalIndex);
             $product->setDescription($faker->paragraph(3));
 
-            // Prix classique
+            // Prix de base de l'hébergement
             $price = new Price();
             $price->setPrice($basePrice);
             $product->addPrice($price);
@@ -38,7 +37,7 @@ class AppFixtures extends Fixture
             $product->addMedium($media);
             $manager->persist($media);
 
-            // Réservations avec le nbAdult et nbChildren déjà prévus dans votre entité Reservation
+            // Réservations
             $nbReservations = $faker->numberBetween(0, 3);
             for ($r = 0; $r < $nbReservations; $r++) {
                 $reservation = new Reservation();
@@ -48,7 +47,6 @@ class AppFixtures extends Fixture
                 $reservation->setStartDate($startDate);
                 $reservation->setEndDate($endDate);
                 $reservation->addProduct($product);
-
                 $reservation->setNbAdult($faker->numberBetween(1, 4));
                 $reservation->setNbChildren($faker->numberBetween(0, 3));
 
@@ -60,65 +58,77 @@ class AppFixtures extends Fixture
         };
 
         // ==========================================
-        // 1. LES 50 MOBIL-HOMES (IDs 1 à 50)
+        // MOBIL-HOMES
         // ==========================================
         for ($i = 0; $i < 14; $i++) {
-            $createSpecificProduct('M-H 3 pers', 4500, 'placeholder_mh.jpg');
+            $createSpecificProduct('MobileHome 3 personnes', 4500, 'mh-3.png');
         }
         for ($i = 0; $i < 13; $i++) {
-            $createSpecificProduct('M-H 4 pers', 5500, 'placeholder_mh.jpg');
+            $createSpecificProduct('MobileHome 4 personnes', 5500, 'mh-4.png');
         }
         for ($i = 0; $i < 17; $i++) {
-            $createSpecificProduct('M-H 5 pers', 7000, 'placeholder_mh.jpg');
+            $createSpecificProduct('MobileHome 5 personnes', 7000, 'mh-5.png');
         }
         for ($i = 0; $i < 6; $i++) {
-            $createSpecificProduct('M-H 6-8 personnes', 8500, 'placeholder_mh.jpg');
+            $createSpecificProduct('MobileHome 6-8 personnes', 8500, 'mh-68.png');
         }
 
         // ==========================================
-        // 2. LES 10 CARAVANES (IDs 51 à 60)
+        // CARAVANES
         // ==========================================
         for ($i = 0; $i < 5; $i++) {
-            $createSpecificProduct('Caravane 6 places', 5000, 'placeholder_caravan.jpg');
+            $createSpecificProduct('Caravane 6 places', 5000, 'c-6.png');
         }
         for ($i = 0; $i < 2; $i++) {
-            $createSpecificProduct('Caravane 4 places', 4000, 'placeholder_caravan.jpg');
+            $createSpecificProduct('Caravane 4 places', 4000, 'c-4.png');
         }
         for ($i = 0; $i < 3; $i++) {
-            $createSpecificProduct('Caravane 2 places', 3000, 'placeholder_caravan.jpg');
+            $createSpecificProduct('Caravane 2 places', 3000, 'c-2.png');
         }
 
         // ==========================================
-        // 3. LES 30 EMPLACEMENTS NUS (IDs 61 à 90)
+        // EMPLACEMENTS NUS
         // ==========================================
         for ($i = 0; $i < 19; $i++) {
-            $createSpecificProduct('Emplacement 8 m²', 1500, 'placeholder_tent.jpg');
+            $createSpecificProduct('Emplacement 8 m²', 1500, 'e-8.png');
         }
         for ($i = 0; $i < 11; $i++) {
-            $createSpecificProduct('Emplacement 12 m²', 2500, 'placeholder_tent.jpg');
+            $createSpecificProduct('Emplacement 12 m²', 2500, 'e-12.png');
         }
 
         // ==========================================
-        // 4. LES EXTRAS (En tant que Produits, à la fin)
+        // EXTRAS (Taxe, Piscine...) - Traités comme des produits indépendants
         // ==========================================
-        $createExtra = function($title, $priceValue, $desc) use ($manager) {
+        $createExtra = function($title, $priceValue, $desc, $imageName = null, $duration = null) use ($manager) {
             $extra = new Product();
             $extra->setTitle($title);
             $extra->setDescription($desc);
 
-            $price = new Price();
-            $price->setPrice($priceValue);
-            $extra->addPrice($price);
+            // On définit la durée (ex: 1 jour)
+            if ($duration !== null) {
+                $extra->setDuration($duration);
+            }
 
+            $price = new Price();
+            $price->setPrice($priceValue); // Le prix de l'extra
+            $extra->addPrice($price);
             $manager->persist($price);
+
+            if ($imageName !== null) {
+                $media = new Media();
+                $media->setPath($imageName);
+                $extra->addMedium($media);
+                $manager->persist($media);
+            }
+
             $manager->persist($extra);
         };
 
-        // Création de vos tarifs annexes sans toucher aux entités !
-        $createExtra('Taxe de séjour', 150, 'Taxe de séjour par nuitée et par adulte.');
-        $createExtra('Accès piscine', 500, 'Accès illimité à l\'espace aquatique.');
-        $createExtra('Tarif Adulte', 1500, 'Tarif par nuitée pour un adulte supplémentaire sur emplacement.');
-        $createExtra('Tarif Enfant', 1000, 'Tarif par nuitée pour un enfant supplémentaire sur emplacement.');
+        // Ajout des extras (Le dernier paramètre "1" correspond à duration = 1)
+        $createExtra('Taxe de séjour Adulte', 150, 'Taxe de séjour par nuitée et par adulte.', null, 1);
+        $createExtra('Taxe de séjour Enfant', 150, 'Taxe de séjour par nuitée et par enfant.', null, 1);
+        $createExtra('Accès piscine Adulte', 500, 'Accès d\'un jour à l\'espace aquatique.', 'pool-adults.png', 1);
+        $createExtra('Accès piscine Enfant', 500, 'Accès d\'un jour à l\'espace aquatique.', 'pool-kids.png', 1);
 
         $manager->flush();
     }
