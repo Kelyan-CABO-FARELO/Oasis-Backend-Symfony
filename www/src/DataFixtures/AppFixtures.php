@@ -125,10 +125,10 @@ class AppFixtures extends Fixture
         };
 
         // Ajout des extras (Le dernier paramètre "1" correspond à duration = 1)
-        $createExtra('Taxe de séjour Adulte', 150, 'Taxe de séjour par nuitée et par adulte.', null, 1);
-        $createExtra('Taxe de séjour Enfant', 150, 'Taxe de séjour par nuitée et par enfant.', null, 1);
-        $createExtra('Accès piscine Adulte', 500, 'Accès d\'un jour à l\'espace aquatique.', 'pool-adults.png', 1);
-        $createExtra('Accès piscine Enfant', 500, 'Accès d\'un jour à l\'espace aquatique.', 'pool-kids.png', 1);
+        $createExtra('Taxe de séjour Adulte', 60, 'Taxe de séjour par nuitée et par adulte.', null, 1);
+        $createExtra('Taxe de séjour Enfant', 35, 'Taxe de séjour par nuitée et par enfant.', null, 1);
+        $createExtra('Accès piscine Adulte', 150, 'Accès d\'un jour à l\'espace aquatique.', 'pool-adults.png', 1);
+        $createExtra('Accès piscine Enfant', 100, 'Accès d\'un jour à l\'espace aquatique.', 'pool-kids.png', 1);
 
         $manager->flush();
     }
