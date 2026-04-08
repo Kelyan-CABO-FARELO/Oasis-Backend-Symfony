@@ -13,17 +13,25 @@ use App\Repository\ReservationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Controller\GuestCheckoutController;
 
 #[ApiResource(
-    normalizationContext: ['groups' => ['reservation:read']],
-    denormalizationContext: ['groups' => ['reservation:write']],
     operations: [
         new GetCollection(security: "is_granted('ROLE_USER')"),
         new Get(security: "is_granted('ROLE_ADMIN') or object.getUser() == user"),
+        new Post(
+            uriTemplate: '/guest-checkout',
+            controller: GuestCheckoutController::class,
+            read: false,
+            deserialize: false,
+            name: 'guest_checkout'
+        ),
         new Post(security: "is_granted('ROLE_USER')"),
         new Put(security: "is_granted('ROLE_ADMIN')"),
         new Delete(security: "is_granted('ROLE_ADMIN') or object.getUser() == user")
-    ]
+    ],
+    normalizationContext: ['groups' => ['reservation:read']],
+    denormalizationContext: ['groups' => ['reservation:write']]
 )]
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 class Reservation
