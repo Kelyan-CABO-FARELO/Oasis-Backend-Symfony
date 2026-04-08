@@ -61,39 +61,39 @@ class AppFixtures extends Fixture
         // MOBIL-HOMES
         // ==========================================
         for ($i = 0; $i < 14; $i++) {
-            $createSpecificProduct('MobileHome 3 personnes', 4500, 'mh-3.png');
+            $createSpecificProduct('MobileHome 3 personnes', 2000, 'mh-3.png');
         }
         for ($i = 0; $i < 13; $i++) {
-            $createSpecificProduct('MobileHome 4 personnes', 5500, 'mh-4.png');
+            $createSpecificProduct('MobileHome 4 personnes', 2400, 'mh-4.png');
         }
         for ($i = 0; $i < 17; $i++) {
-            $createSpecificProduct('MobileHome 5 personnes', 7000, 'mh-5.png');
+            $createSpecificProduct('MobileHome 5 personnes', 2700, 'mh-5.png');
         }
         for ($i = 0; $i < 6; $i++) {
-            $createSpecificProduct('MobileHome 6-8 personnes', 8500, 'mh-68.png');
+            $createSpecificProduct('MobileHome 6-8 personnes', 3400, 'mh-68.png');
         }
 
         // ==========================================
         // CARAVANES
         // ==========================================
         for ($i = 0; $i < 5; $i++) {
-            $createSpecificProduct('Caravane 6 places', 5000, 'c-6.png');
+            $createSpecificProduct('Caravane 6 places', 2400, 'c-6.png');
         }
         for ($i = 0; $i < 2; $i++) {
-            $createSpecificProduct('Caravane 4 places', 4000, 'c-4.png');
+            $createSpecificProduct('Caravane 4 places', 1800, 'c-4.png');
         }
         for ($i = 0; $i < 3; $i++) {
-            $createSpecificProduct('Caravane 2 places', 3000, 'c-2.png');
+            $createSpecificProduct('Caravane 2 places', 1500, 'c-2.png');
         }
 
         // ==========================================
         // EMPLACEMENTS NUS
         // ==========================================
         for ($i = 0; $i < 19; $i++) {
-            $createSpecificProduct('Emplacement 8 m²', 1500, 'e-8.png');
+            $createSpecificProduct('Emplacement 8 m²', 1200, 'e-8.png');
         }
         for ($i = 0; $i < 11; $i++) {
-            $createSpecificProduct('Emplacement 12 m²', 2500, 'e-12.png');
+            $createSpecificProduct('Emplacement 12 m²', 1400, 'e-12.png');
         }
 
         // ==========================================
