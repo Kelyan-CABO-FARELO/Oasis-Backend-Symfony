@@ -59,4 +59,43 @@ class ManageBookingController extends AbstractController
         // 3. On renvoie un message de succès
         return $this->json(['message' => 'Réservation annulée avec succès.'], 200);
     }
+
+    // 👇 FONCTION D'AJOUT D'OPTIONS (PISCINE) MISE À JOUR
+    #[Route('/manage-booking/{id}/add-pool', name: 'api_manage_booking_add_pool', methods: ['POST'])]
+    public function addPoolOption(
+        Reservation $reservation,
+        Request $request,
+        EntityManagerInterface $em,
+        \App\Repository\ProductRepository $productRepo
+    ): JsonResponse {
+        $token = $request->query->get('token');
+        if (!$token || $reservation->getManagementToken() !== $token) {
+            return $this->json(['message' => 'Accès refusé ou lien expiré.'], 403);
+        }
+
+        // On récupère le nombre de jours envoyé par React
+        $data = json_decode($request->getContent(), true);
+        $poolDays = $data['poolDays'] ?? 1;
+
+        $poolAdult = $productRepo->findOneBy(['title' => 'Accès piscine Adulte']);
+        $poolChild = $productRepo->findOneBy(['title' => 'Accès piscine Enfant']);
+        $added = false;
+
+        if ($poolAdult && $reservation->getNbAdult() > 0) {
+            $reservation->addProduct($poolAdult);
+            $added = true;
+        }
+        if ($poolChild && $reservation->getNbChildren() > 0) {
+            $reservation->addProduct($poolChild);
+            $added = true;
+        }
+
+        if ($added) {
+            $em->flush();
+            // On renvoie un message personnalisé avec le nombre de jours !
+            return $this->json(['message' => "Option Espace Aquatique ajoutée pour $poolDays jour(s)."], 200);
+        }
+
+        return $this->json(['message' => 'Impossible de trouver l\'option.'], 404);
+    }
 }
