@@ -6,20 +6,47 @@ use App\Entity\Media;
 use App\Entity\Price;
 use App\Entity\Product;
 use App\Entity\Reservation;
+use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface; // 👈 L'outil indispensable pour crypter
 
 class AppFixtures extends Fixture
 {
+    // 👇 On injecte le Hasher dans le constructeur
+    public function __construct(private UserPasswordHasherInterface $passwordHasher)
+    {
+    }
+
     public function load(ObjectManager $manager): void
     {
+        // ==========================================
+        // 👑 CRÉATION DE L'ADMINISTRATEUR (TOI)
+        // ==========================================
+        $user = new User();
+        $user->setEmail("kelyan.cf@gmail.com");
+        $user->setRoles(["ROLE_ADMIN"]);
+
+        // 🔐 On crypte le mot de passe "password"
+        $hashedPassword = $this->passwordHasher->hashPassword($user, "password");
+        $user->setPassword($hashedPassword);
+
+        $user->setFirstname("Kelyan");
+        $user->setLastname("Cf");
+        $user->setMobile("0661924630");
+        $user->setCreatedAt(new \DateTime());
+        $user->setUpdatedAt(new \DateTime());
+        $user->setIsActive(true);
+        $user->setIsOwner(false);
+        $manager->persist($user);
+
+
         $faker = Factory::create('fr_FR');
         $currentYear = (new \DateTime())->format('Y');
 
         $globalIndex = 1;
 
-        // 👇 Plus besoin de $adultPrice et $childPrice, l'hébergement a un prix unique par nuit !
         $createSpecificProduct = function($title, $basePrice, $imageName) use ($faker, $manager, $currentYear, &$globalIndex) {
             $product = new Product();
             $product->setTitle($title . ' n°' . $globalIndex);
