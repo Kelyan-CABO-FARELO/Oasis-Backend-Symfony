@@ -36,8 +36,6 @@ use Doctrine\ORM\Mapping as ORM;
     paginationEnabled: false
 )]
 
-#[ApiFilter(AvailableProductFilter::class)]
-
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
 {

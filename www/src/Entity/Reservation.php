@@ -69,6 +69,9 @@ class Reservation
     #[ORM\Column]
     private ?bool $isPaid = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $managementToken = null;
+
     public function __construct()
     {
         $this->products = new ArrayCollection();
@@ -171,6 +174,18 @@ class Reservation
     public function setIsPaid(bool $isPaid): static
     {
         $this->isPaid = $isPaid;
+
+        return $this;
+    }
+
+    public function getManagementToken(): ?string
+    {
+        return $this->managementToken;
+    }
+
+    public function setManagementToken(?string $managementToken): static
+    {
+        $this->managementToken = $managementToken;
 
         return $this;
     }

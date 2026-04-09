@@ -74,7 +74,10 @@ class GuestCheckoutController extends AbstractController
         $reservation->setNbChildren($resData['nbChildren']);
         $reservation->addProduct($product);
 
-        // NOUVEAU : On met isPaid à false par défaut !
+        // On génère le Magic Link !
+        $reservation->setManagementToken(bin2hex(random_bytes(16)));
+
+        //On met isPaid à false par défaut !
         $reservation->setIsPaid(false);
 
         $em->persist($reservation);
