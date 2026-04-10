@@ -27,7 +27,6 @@ use App\State\UserPasswordHasherProcessor;
     ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']],
-    // 👇 AJOUTE CES DEUX LIGNES ICI :
     order: ['id' => 'DESC'],
     paginationEnabled: false
 )]
