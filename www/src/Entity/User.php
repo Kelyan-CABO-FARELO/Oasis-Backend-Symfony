@@ -18,15 +18,18 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use App\State\UserPasswordHasherProcessor;
 
 #[ApiResource(
-    normalizationContext: ['groups' => ['user:read']],
-    denormalizationContext: ['groups' => ['user:write']],
     operations: [
         new GetCollection(security: "is_granted('ROLE_ADMIN')"),
         new Get(security: "is_granted('ROLE_ADMIN') or object == user"),
         new Post(processor: UserPasswordHasherProcessor::class),
         new Put(security: "is_granted('ROLE_ADMIN') or object == user"),
         new Delete(security: "is_granted('ROLE_ADMIN')")
-    ]
+    ],
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']],
+    // 👇 AJOUTE CES DEUX LIGNES ICI :
+    order: ['id' => 'DESC'],
+    paginationEnabled: false
 )]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
