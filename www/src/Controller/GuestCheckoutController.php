@@ -121,9 +121,28 @@ class GuestCheckoutController extends AbstractController
             $piscineEnfant = 100; // 1.00€
             $poolDays = $resData['poolDays'];
             $totalPool = ($piscineAdulte * $resData['nbAdults'] * $poolDays) + ($piscineEnfant * $resData['nbChildren'] * $poolDays);
+
+            // 👇 1. ON SAUVEGARDE LE NOMBRE DE JOURS EN BDD !
+            $reservation->setPoolDays($poolDays);
+
+            // 👇 2. ON RÉCUPÈRE TOUS LES PRODUITS "PISCINE" (Plus de setMaxResults(1) !)
+            $poolProducts = $productRepo->createQueryBuilder('p')
+                ->where('LOWER(p.title) LIKE :search')
+                ->setParameter('search', '%piscine%')
+                ->getQuery()
+                ->getResult();
+
+            foreach ($poolProducts as $poolP) {
+                // Si c'est un pass enfant, on vérifie qu'il y a bien des enfants avant de l'ajouter !
+                if (stripos($poolP->getTitle(), 'enfant') !== false && $resData['nbChildren'] == 0) {
+                    continue;
+                }
+                $reservation->addProduct($poolP);
+            }
+            $em->flush();
         }
 
-        // 🛑 TOTAL EN CENTIMES POUR STRIPE (On arrondit pour éviter les bugs de décimales)
+        // TOTAL EN CENTIMES POUR STRIPE (On arrondit pour éviter les bugs de décimales)
         $grandTotalInCents = (int) round($finalAccommodation + $totalTaxes + $totalPool);
 
         // 4. STRIPE PAYMENT INTENT

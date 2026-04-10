@@ -8,7 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Attribute\Groups;
 use App\Repository\ReservationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -31,7 +31,9 @@ use App\Controller\GuestCheckoutController;
         new Delete(security: "is_granted('ROLE_ADMIN') or object.getUser() == user")
     ],
     normalizationContext: ['groups' => ['reservation:read']],
-    denormalizationContext: ['groups' => ['reservation:write']]
+    denormalizationContext: ['groups' => ['reservation:write']],
+    order: ['id' => 'DESC'],
+    paginationEnabled: false
 )]
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
 class Reservation
@@ -67,6 +69,7 @@ class Reservation
     private Collection $products;
 
     #[ORM\Column]
+    #[Groups(['reservation:read', 'reservation:write'])]
     private ?bool $isPaid = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -166,7 +169,7 @@ class Reservation
         return $this;
     }
 
-    public function isPaid(): ?bool
+    public function getIsPaid(): ?bool
     {
         return $this->isPaid;
     }
@@ -187,6 +190,21 @@ class Reservation
     {
         $this->managementToken = $managementToken;
 
+        return $this;
+    }
+
+    #[ORM\Column(nullable: true)]
+    #[Groups(['reservation:read', 'reservation:write'])]
+    private ?int $poolDays = null;
+
+    public function getPoolDays(): ?int
+    {
+        return $this->poolDays;
+    }
+
+    public function setPoolDays(?int $poolDays): static
+    {
+        $this->poolDays = $poolDays;
         return $this;
     }
 }
