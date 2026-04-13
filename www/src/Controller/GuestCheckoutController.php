@@ -6,6 +6,8 @@ use App\Entity\Reservation;
 use App\Entity\User;
 use App\Repository\ProductRepository;
 use App\Repository\UserRepository;
+use App\Entity\Invoice;
+use App\Entity\LineInvoice;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -109,7 +111,7 @@ class GuestCheckoutController extends AbstractController
         $discountMultiplier = min(floor($nights / 7) * 0.05, 0.25);
         $finalAccommodation = $rawAccommodation - ($rawAccommodation * $discountMultiplier);
 
-        // Taxes (Exemple de valeurs dures basées sur tes fixtures)
+        // Taxes
         $taxeAdulte = 60; // 0.60€
         $taxeEnfant = 35; // 0.35€
         $totalTaxes = ($taxeAdulte * $resData['nbAdults'] * $nights) + ($taxeEnfant * $resData['nbChildren'] * $nights);
@@ -122,10 +124,10 @@ class GuestCheckoutController extends AbstractController
             $poolDays = $resData['poolDays'];
             $totalPool = ($piscineAdulte * $resData['nbAdults'] * $poolDays) + ($piscineEnfant * $resData['nbChildren'] * $poolDays);
 
-            // 👇 1. ON SAUVEGARDE LE NOMBRE DE JOURS EN BDD !
+            // 1. ON SAUVEGARDE LE NOMBRE DE JOURS EN BDD !
             $reservation->setPoolDays($poolDays);
 
-            // 👇 2. ON RÉCUPÈRE TOUS LES PRODUITS "PISCINE" (Plus de setMaxResults(1) !)
+            // 2. ON RÉCUPÈRE TOUS LES PRODUITS "PISCINE"
             $poolProducts = $productRepo->createQueryBuilder('p')
                 ->where('LOWER(p.title) LIKE :search')
                 ->setParameter('search', '%piscine%')
@@ -145,6 +147,49 @@ class GuestCheckoutController extends AbstractController
         // TOTAL EN CENTIMES POUR STRIPE (On arrondit pour éviter les bugs de décimales)
         $grandTotalInCents = (int) round($finalAccommodation + $totalTaxes + $totalPool);
 
+        // ======================================================
+        // 📝 CRÉATION DE LA FACTURE EN BASE DE DONNÉES
+        // ======================================================
+        $invoice = new Invoice();
+        // On génère un numéro de facture unique (ex: FA-20260413-4512)
+        $invoice->setTitle('FA-' . date('Ymd') . '-' . random_int(1000, 9999));
+        $invoice->setPerson($user->getFirstname() . ' ' . $user->getLastname());
+        $invoice->setCreatedAt(new \DateTime());
+        $invoice->setPath('generation_en_attente'); // On remplacera par l'URL du PDF plus tard
+
+        // (Optionnel) Si tu as ajouté le champ type dans ton entité Invoice pour différencier les proprios
+        // $invoice->setType('client');
+
+        // Ligne 1 : L'hébergement
+        $lineHebergement = new LineInvoice();
+        $lineHebergement->setLineProduct('Séjour : ' . $product->getTitle());
+        $lineHebergement->setLinePrice((int) round($finalAccommodation));
+        $invoice->addLineInvoice($lineHebergement);
+        $em->persist($lineHebergement);
+
+        // Ligne 2 : Les Taxes de séjour
+        if ($totalTaxes > 0) {
+            $lineTaxes = new LineInvoice();
+            $lineTaxes->setLineProduct('Taxes de séjour (' . $nights . ' nuits)');
+            $lineTaxes->setLinePrice((int) round($totalTaxes));
+            $invoice->addLineInvoice($lineTaxes);
+            $em->persist($lineTaxes);
+        }
+
+        // Ligne 3 : L'option Piscine (Si cochée)
+        if ($totalPool > 0) {
+            $linePool = new LineInvoice();
+            $linePool->setLineProduct('Pass Espace Aquatique (' . $resData['poolDays'] . ' jours)');
+            $linePool->setLinePrice((int) round($totalPool));
+            $invoice->addLineInvoice($linePool);
+            $em->persist($linePool);
+        }
+
+        // On sauvegarde la facture et toutes ses lignes
+        $em->persist($invoice);
+        $em->flush();
+        // ======================================================
+
         // 4. STRIPE PAYMENT INTENT
         Stripe::setApiKey(trim($_ENV['STRIPE_SECRET_KEY']));
 
@@ -155,6 +200,7 @@ class GuestCheckoutController extends AbstractController
                 'automatic_payment_methods' => ['enabled' => true],
                 'metadata' => [
                     'reservation_id' => $reservation->getId(),
+                    'invoice_id' => $invoice->getId(), // 💡 Bonus : On lie l'ID de la facture à Stripe !
                     'user_email' => $user->getEmail()
                 ],
             ]);
