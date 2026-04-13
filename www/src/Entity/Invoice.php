@@ -12,6 +12,7 @@ use App\Repository\InvoiceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups; // 👈 C'EST LUI QUI MANQUAIT
 
 #[ApiResource(
     operations: [
@@ -20,7 +21,9 @@ use Doctrine\ORM\Mapping as ORM;
         new Post(security: "is_granted('ROLE_ADMIN')"),
         new Put(security: "is_granted('ROLE_ADMIN')"),
         new Delete(security: "is_granted('ROLE_ADMIN')")
-    ]
+    ],
+    normalizationContext: ['groups' => ['invoice:read']], // 👈 LA RÈGLE
+    order: ['createdAt' => 'DESC']
 )]
 #[ORM\Entity(repositoryClass: InvoiceRepository::class)]
 class Invoice
@@ -28,21 +31,27 @@ class Invoice
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['invoice:read'])] // 👈 LE BADGE QUI AUTORISE LA SORTIE
     private ?int $id = null;
 
     #[ORM\Column(length: 200)]
+    #[Groups(['invoice:read'])] // 👈 LE BADGE
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['invoice:read'])] // 👈 LE BADGE
     private ?string $person = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['invoice:read'])] // 👈 LE BADGE
     private ?string $path = null;
 
     #[ORM\Column]
+    #[Groups(['invoice:read'])] // 👈 LE BADGE
     private ?\DateTime $createdAt = null;
 
-    #[ORM\OneToMany(targetEntity: LineInvoice::class, mappedBy: 'invoice')]
+    #[ORM\OneToMany(targetEntity: LineInvoice::class, mappedBy: 'invoice', cascade: ['persist', 'remove'])]
+    #[Groups(['invoice:read'])] // 👈 LE BADGE POUR AFFICHER LES LIGNES DANS LA MODALE
     private Collection $lineInvoices;
 
     public function __construct()

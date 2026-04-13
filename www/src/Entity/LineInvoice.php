@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Repository\LineInvoiceRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups; // 👈 IMPORT LUI AUSSI
 
 #[ApiResource(
     operations: [
@@ -26,12 +27,15 @@ class LineInvoice
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['invoice:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 200)]
+    #[Groups(['invoice:read'])] // 👈 AUTORISE L'AFFICHAGE DU NOM DU PRODUIT
     private ?string $LineProduct = null;
 
     #[ORM\Column]
+    #[Groups(['invoice:read'])] // 👈 AUTORISE L'AFFICHAGE DU PRIX
     private ?int $LinePrice = null;
 
     #[ORM\ManyToOne(inversedBy: 'lineInvoices')]
