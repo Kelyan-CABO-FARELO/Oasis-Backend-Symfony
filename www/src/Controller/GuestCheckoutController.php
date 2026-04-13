@@ -188,6 +188,9 @@ class GuestCheckoutController extends AbstractController
         // On sauvegarde la facture et toutes ses lignes
         $em->persist($invoice);
         $em->flush();
+
+        $reservation->setInvoice($invoice);
+        $em->flush();
         // ======================================================
 
         // 4. STRIPE PAYMENT INTENT

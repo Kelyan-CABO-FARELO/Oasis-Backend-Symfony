@@ -34,6 +34,7 @@ class ManageBookingController extends AbstractController
             'nbChildren' => $reservation->getNbChildren(),
             'isPaid' => $reservation->getIsPaid(),
             'products' => $productTitles,
+            'invoicePath' => $reservation->getInvoice() ? $reservation->getInvoice()->getPath() : null,
             'user' => [
                 'firstname' => $reservation->getUser()->getFirstname(),
                 'lastname' => $reservation->getUser()->getLastname(),

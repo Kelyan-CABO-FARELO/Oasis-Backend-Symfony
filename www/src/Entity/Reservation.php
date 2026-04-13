@@ -9,11 +9,12 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use Symfony\Component\Serializer\Attribute\Groups;
-use App\Repository\ReservationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ReservationRepository;
 use App\Controller\GuestCheckoutController;
+use App\Entity\Invoice;
 
 #[ApiResource(
     operations: [
@@ -207,4 +208,11 @@ class Reservation
         $this->poolDays = $poolDays;
         return $this;
     }
+
+    #[ORM\OneToOne(cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Invoice $invoice = null;
+
+    public function getInvoice(): ?Invoice { return $this->invoice; }
+    public function setInvoice(?Invoice $invoice): static { $this->invoice = $invoice; return $this; }
 }
