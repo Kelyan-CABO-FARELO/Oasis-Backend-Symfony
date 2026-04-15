@@ -66,6 +66,7 @@ class Product
     private Collection $media;
 
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'products')]
+    #[Groups(['product:read'])]
     private Collection $user;
 
     #[ORM\ManyToMany(targetEntity: Reservation::class, inversedBy: 'products')]

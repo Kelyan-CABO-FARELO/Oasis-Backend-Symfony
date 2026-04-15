@@ -36,9 +36,18 @@ class MakeOwnerController extends AbstractController
             return $this->json(['message' => 'Ce bien n\'existe pas.'], 404);
         }
 
+        // 🛡️ VERROU CORRIGÉ : On utilise getUser() sans "s" !
+        foreach ($product->getUser() as $existingUser) {
+            if ($existingUser->isOwner()) {
+                return $this->json([
+                    'message' => 'Ce bien est déjà la propriété de ' . $existingUser->getFirstname() . ' ' . $existingUser->getLastname()
+                ], 403);
+            }
+        }
+
         // 1. On transforme le prospect en Propriétaire officiel
         $user->setIsOwner(true);
-        $user->setWantsToBecomeOwner(false); // 👈 Il disparaît de la file d'attente
+        $user->setWantsToBecomeOwner(false); // On enlève l'étiquette prospect
         $user->setRoles(['ROLE_USER', 'ROLE_OWNER']);
         $user->setContractDate(new \DateTime());
 
@@ -60,7 +69,7 @@ class MakeOwnerController extends AbstractController
         $em->persist($line);
         $em->persist($invoice);
 
-        // On sauvegarde tout
+        // On sauvegarde tout en base
         $em->flush();
 
         // 3. On prépare la machine à carte bleue (Stripe)
@@ -74,7 +83,7 @@ class MakeOwnerController extends AbstractController
                 'metadata' => [
                     'user_id' => $user->getId(),
                     'invoice_id' => $invoice->getId(),
-                    'type' => 'owner_purchase' // Permettra au webhook de différencier
+                    'type' => 'owner_purchase' // Permettra au webhook de différencier l'achat de la location
                 ],
             ]);
 
