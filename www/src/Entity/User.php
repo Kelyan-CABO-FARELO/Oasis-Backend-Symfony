@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\Patch;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -23,6 +24,7 @@ use App\State\UserPasswordHasherProcessor;
         new Get(security: "is_granted('ROLE_ADMIN') or object == user"),
         new Post(processor: UserPasswordHasherProcessor::class),
         new Put(security: "is_granted('ROLE_ADMIN') or object == user"),
+        new Patch(),
         new Delete(security: "is_granted('ROLE_ADMIN')")
     ],
     normalizationContext: ['groups' => ['user:read']],
