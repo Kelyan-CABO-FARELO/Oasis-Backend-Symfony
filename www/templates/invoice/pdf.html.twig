@@ -18,7 +18,13 @@
 
 <div class="header">
     <h1>FACTURE</h1>
-    <h2>Séjour du {{ reservation.startDate|date('d/m/Y') }} au {{ reservation.endDate|date('d/m/Y') }}</h2>
+    {% if reservation %}
+        {# S'il y a une réservation (séjour classique) #}
+        <h2>Séjour du {{ reservation.startDate|date('d/m/Y') }} au {{ reservation.endDate|date('d/m/Y') }}</h2>
+    {% else %}
+        {# S'il n'y a pas de réservation (achat de mobil-home) #}
+        <h2>Achat de Résidence / Parcelle</h2>
+    {% endif %}
 </div>
 
 <div class="details">

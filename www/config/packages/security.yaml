@@ -63,6 +63,9 @@ security:
         # On autorise le lien magique
         - { path: ^/api/manage-booking, roles: PUBLIC_ACCESS }
 
+        # On autorise la demande de proprio
+        - { path: ^/api/submit-owner-request, roles: PUBLIC_ACCESS }
+
         # --- LE VERROUILLAGE GLOBAL À LA TOUTE FIN ---
         # On verrouille TOUT le reste de l'API (doit toujours être en dernier)
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

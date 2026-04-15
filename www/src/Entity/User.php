@@ -324,4 +324,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->isOwner;
     }
+
+    #[ORM\Column(options: ["default" => false])]
+    #[Groups(['user:read', 'user:write'])]
+    private ?bool $wantsToBecomeOwner = false;
+
+    public function wantsToBecomeOwner(): ?bool { return $this->wantsToBecomeOwner; }
+    public function setWantsToBecomeOwner(bool $wantsToBecomeOwner): static {
+        $this->wantsToBecomeOwner = $wantsToBecomeOwner;
+        return $this;
+    }
 }
