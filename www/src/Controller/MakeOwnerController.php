@@ -36,7 +36,7 @@ class MakeOwnerController extends AbstractController
             return $this->json(['message' => 'Ce bien n\'existe pas.'], 404);
         }
 
-        // 🛡️ VERROU CORRIGÉ : On utilise getUser() sans "s" !
+        // 🛡️ VERROU : On vérifie si le bien n'est pas déjà vendu
         foreach ($product->getUser() as $existingUser) {
             if ($existingUser->isOwner()) {
                 return $this->json([
@@ -48,7 +48,12 @@ class MakeOwnerController extends AbstractController
         // 1. On transforme le prospect en Propriétaire officiel
         $user->setIsOwner(true);
         $user->setWantsToBecomeOwner(false); // On enlève l'étiquette prospect
-        $user->setRoles(['ROLE_USER', 'ROLE_OWNER']);
+
+        // 🛡️ CORRECTION DES RÔLES : On fusionne au lieu d'écraser
+        $roles = $user->getRoles();
+        $roles[] = 'ROLE_OWNER';
+        $user->setRoles(array_unique($roles));
+
         $user->setContractDate(new \DateTime());
 
         // On lie le mobil-home/emplacement à l'utilisateur
