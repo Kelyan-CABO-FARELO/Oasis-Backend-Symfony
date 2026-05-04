@@ -331,9 +331,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'user:write'])]
     private ?bool $wantsToBecomeOwner = false;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $resetToken = null;
+
     public function getWantsToBecomeOwner(): ?bool { return $this->wantsToBecomeOwner; }
     public function setWantsToBecomeOwner(bool $wantsToBecomeOwner): static {
         $this->wantsToBecomeOwner = $wantsToBecomeOwner;
+        return $this;
+    }
+
+    public function getResetToken(): ?string
+    {
+        return $this->resetToken;
+    }
+
+    public function setResetToken(?string $resetToken): static
+    {
+        $this->resetToken = $resetToken;
+
         return $this;
     }
 }

@@ -46,6 +46,8 @@ security:
         # On autorise la connexion
         - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
 
+        - { path: ^/api/set-new-password, roles: PUBLIC_ACCESS }
+
         # On autorise l'inscription (POST)
         - { path: ^/api/users, roles: PUBLIC_ACCESS, methods: [ POST ] }
 

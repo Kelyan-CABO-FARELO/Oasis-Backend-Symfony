@@ -45,21 +45,28 @@ class MakeOwnerController extends AbstractController
             }
         }
 
-        // 1. On transforme le prospect en Propriétaire officiel
+        // ==========================================
+        // 1. TRANSFORMATION EN PROPRIÉTAIRE
+        // ==========================================
         $user->setIsOwner(true);
         $user->setWantsToBecomeOwner(false); // On enlève l'étiquette prospect
 
-        // 🛡️ CORRECTION DES RÔLES : On fusionne au lieu d'écraser
+        // Fusion des rôles (pour ne pas écraser les droits Admin s'il y en a)
         $roles = $user->getRoles();
         $roles[] = 'ROLE_OWNER';
         $user->setRoles(array_unique($roles));
 
-        $user->setContractDate(new \DateTime());
+        // 🔑 GÉNÉRATION DU LIEN MAGIQUE
+        // On génère le jeton qui sera glissé dans l'e-mail pour la création du mot de passe
+        $user->setResetToken(bin2hex(random_bytes(32)));
 
-        // On lie le mobil-home/emplacement à l'utilisateur
+        // Date de début de contrat et liaison du bien
+        $user->setContractDate(new \DateTime());
         $user->addProduct($product);
 
-        // 2. On génère sa facture d'achat de vente
+        // ==========================================
+        // 2. GÉNÉRATION DE LA FACTURE D'ACHAT
+        // ==========================================
         $invoice = new Invoice();
         $invoice->setTitle('FA-' . date('Ymd') . '-' . random_int(1000, 9999));
         $invoice->setPerson($user->getFirstname() . ' ' . $user->getLastname());
@@ -74,10 +81,13 @@ class MakeOwnerController extends AbstractController
         $em->persist($line);
         $em->persist($invoice);
 
-        // On sauvegarde tout en base
+        // 💾 SAUVEGARDE GLOBALE
+        // Ici, Symfony enregistre en base : la facture, les nouveaux rôles, ET le ResetToken !
         $em->flush();
 
-        // 3. On prépare la machine à carte bleue (Stripe)
+        // ==========================================
+        // 3. PRÉPARATION DU PAIEMENT STRIPE
+        // ==========================================
         Stripe::setApiKey(trim($_ENV['STRIPE_SECRET_KEY']));
 
         try {
