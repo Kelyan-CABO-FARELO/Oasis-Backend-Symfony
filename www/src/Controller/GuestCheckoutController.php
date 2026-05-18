@@ -57,6 +57,8 @@ class GuestCheckoutController extends AbstractController
             $user->setPassword($passwordHasher->hashPassword($user, $randomPassword));
 
             $em->persist($user);
+        } else {
+            $user->setConsentDataRetention($userData['consentDataRetention'] ?? false);
         }
 
         // 2. CRÉATION DE LA RÉSERVATION

@@ -27,11 +27,11 @@ class Price
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'user:read'])]
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'user:read'])]
     private ?int $price = null;
 
     #[ORM\ManyToOne(inversedBy: 'prices')]

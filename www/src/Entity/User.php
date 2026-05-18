@@ -39,7 +39,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'reservation:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
@@ -94,6 +94,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $reservations;
 
     #[ORM\ManyToMany(targetEntity: Product::class, mappedBy: 'user')]
+    #[Groups(['user:read'])]
     private Collection $products;
 
     public function __construct()

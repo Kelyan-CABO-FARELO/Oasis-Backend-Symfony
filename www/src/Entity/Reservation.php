@@ -15,7 +15,10 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ReservationRepository;
 use App\Controller\GuestCheckoutController;
 use App\Entity\Invoice;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 
+#[ApiFilter(SearchFilter::class, properties: ['products' => 'exact'])]
 #[ApiResource(
     operations: [
         new GetCollection(security: "is_granted('ROLE_USER')"),

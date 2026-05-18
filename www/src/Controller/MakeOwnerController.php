@@ -48,21 +48,30 @@ class MakeOwnerController extends AbstractController
         // ==========================================
         // 1. TRANSFORMATION EN PROPRIÉTAIRE
         // ==========================================
-        $user->setIsOwner(true);
         $user->setWantsToBecomeOwner(false); // On enlève l'étiquette prospect
 
-        // Fusion des rôles (pour ne pas écraser les droits Admin s'il y en a)
-        $roles = $user->getRoles();
-        $roles[] = 'ROLE_OWNER';
-        $user->setRoles(array_unique($roles));
+        if (!$user->isOwner()) {
+            $user->setIsOwner(true);
+            
+            // Fusion des rôles (pour ne pas écraser les droits Admin s'il y en a)
+            $roles = $user->getRoles();
+            $roles[] = 'ROLE_OWNER';
+            $user->setRoles(array_unique($roles));
 
-        // 🔑 GÉNÉRATION DU LIEN MAGIQUE
-        // On génère le jeton qui sera glissé dans l'e-mail pour la création du mot de passe
-        $user->setResetToken(bin2hex(random_bytes(32)));
+            // 🔑 GÉNÉRATION DU LIEN MAGIQUE
+            // On génère le jeton qui sera glissé dans l'e-mail pour la création du mot de passe
+            $user->setResetToken(bin2hex(random_bytes(32)));
+        }
+
+        $duration = (int) ($data['duration'] ?? 1);
 
         // Date de début de contrat et liaison du bien
         $user->setContractDate(new \DateTime());
         $user->addProduct($product);
+
+        // Configuration du contrat spécifique au produit
+        $product->setContractDate(new \DateTime());
+        $product->setDuration($duration);
 
         // ==========================================
         // 2. GÉNÉRATION DE LA FACTURE D'ACHAT

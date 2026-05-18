@@ -51,13 +51,21 @@ class ProcessOwnerSaleMessageHandler
 
         // 3. Envoyer l'E-mail
         $pdfAbsolutePath = $this->params->get('kernel.project_dir') . '/public' . $pdfPathRelative;
-        $email = (new Email())
-            ->from('contact@domaine-loasis.fr') // Ton adresse d'expédition
-            ->to($user->getEmail())
-            ->subject('Bienvenue chez vous ! Votre facture d\'achat - Domaine L\'Oasis')
-            ->html($this->twig->render('email/owner_welcome.html.twig', ['user' => $user]))
-            ->attachFromPath($pdfAbsolutePath);
+        $isRenewal = str_starts_with(strtoupper($invoice->getTitle() ?? ''), 'FA-RENEW-');
 
+        $email = (new Email())
+            ->from('contact@domaine-loasis.fr')
+            ->to($user->getEmail());
+
+        if ($isRenewal) {
+            $email->subject('Confirmation de renouvellement de contrat - Domaine L\'Oasis 🔄')
+                  ->html($this->twig->render('emails/owner_renewal.html.twig', ['user' => $user, 'invoice' => $invoice]));
+        } else {
+            $email->subject('Bienvenue chez vous ! Votre facture d\'achat - Domaine L\'Oasis 🏕️')
+                  ->html($this->twig->render('emails/owner_welcome.html.twig', ['user' => $user, 'invoice' => $invoice]));
+        }
+
+        $email->attachFromPath($pdfAbsolutePath);
         $this->mailer->send($email);
     }
 }

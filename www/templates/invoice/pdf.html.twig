@@ -17,13 +17,22 @@
 <body>
 
 <div class="header">
-    <h1>FACTURE</h1>
-    {% if reservation %}
-        {# S'il y a une réservation (séjour classique) #}
-        <h2>Séjour du {{ reservation.startDate|date('d/m/Y') }} au {{ reservation.endDate|date('d/m/Y') }}</h2>
+    {% if 'FA-RENEW-' in invoice.title|upper %}
+        <h1>RENOUVELLEMENT DE CONTRAT</h1>
+        <h2>Prolongation de Partenariat Propriétaire</h2>
+    {% elseif 'AV-CANCEL-' in invoice.title|upper %}
+        <h1 style="color: #dc2626;">AVOIR D'ANNULATION</h1>
+        <h2>Remboursement de Séjour Client</h2>
+    {% elseif not (invoice.title|upper starts with 'FA-') %}
+        <h1>FACTURE DE RÉTRIBUTION</h1>
+        <h2>Versement Propriétaire - Fin de Saison</h2>
     {% else %}
-        {# S'il n'y a pas de réservation (achat de mobil-home) #}
-        <h2>Achat de Résidence / Parcelle</h2>
+        <h1>FACTURE</h1>
+        {% if reservation %}
+            <h2>Séjour du {{ reservation.startDate|date('d/m/Y') }} au {{ reservation.endDate|date('d/m/Y') }}</h2>
+        {% else %}
+            <h2>Achat de Résidence / Parcelle</h2>
+        {% endif %}
     {% endif %}
 </div>
 
@@ -57,7 +66,15 @@
 </div>
 
 <div class="footer">
-    Merci pour votre réservation. Le camping vous attend avec impatience !
+    {% if 'FA-RENEW-' in invoice.title|upper %}
+        Merci pour votre confiance et votre fidélité renouvelée au Domaine L'Oasis.
+    {% elseif 'AV-CANCEL-' in invoice.title|upper %}
+        Avoir d'annulation de séjour. Remboursement effectué sur votre compte bancaire.
+    {% elseif not (invoice.title|upper starts with 'FA-') %}
+        Rétribution effectuée en fin de saison conformément aux conditions de partenariat.
+    {% else %}
+        Merci pour votre réservation. Le camping vous attend avec impatience !
+    {% endif %}
 </div>
 
 </body>

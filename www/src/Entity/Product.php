@@ -42,23 +42,27 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['product:read', 'reservation:read'])]
+    #[Groups(['product:read', 'reservation:read', 'user:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 200)]
-    #[Groups(['product:read', 'product:write', 'reservation:read'])]
+    #[Groups(['product:read', 'product:write', 'reservation:read', 'user:read'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['product:read', 'product:write'])]
+    #[Groups(['product:read', 'product:write', 'user:read'])]
     private ?string $description = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['product:read', 'product:write'])]
+    #[Groups(['product:read', 'product:write', 'user:read'])]
     private ?int $duration = null;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(['product:read', 'product:write', 'user:read'])]
+    private ?\DateTimeInterface $contractDate = null;
+
     #[ORM\OneToMany(targetEntity: Price::class, mappedBy: 'product')]
-    #[Groups(['product:read', 'product:write'])]
+    #[Groups(['product:read', 'product:write', 'user:read'])]
     private Collection $prices;
 
     #[ORM\ManyToMany(targetEntity: Media::class, mappedBy: 'product')]
@@ -209,6 +213,18 @@ class Product
     public function removeReservation(Reservation $reservation): static
     {
         $this->reservation->removeElement($reservation);
+
+        return $this;
+    }
+
+    public function getContractDate(): ?\DateTimeInterface
+    {
+        return $this->contractDate;
+    }
+
+    public function setContractDate(?\DateTimeInterface $contractDate): static
+    {
+        $this->contractDate = $contractDate;
 
         return $this;
     }

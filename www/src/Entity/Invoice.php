@@ -12,11 +12,14 @@ use App\Repository\InvoiceRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attribute\Groups; // 👈 C'EST LUI QUI MANQUAIT
+use Symfony\Component\Serializer\Attribute\Groups;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 
+#[ApiFilter(SearchFilter::class, properties: ['person' => 'exact'])]
 #[ApiResource(
     operations: [
-        new GetCollection(security: "is_granted('ROLE_ADMIN')"),
+        new GetCollection(security: "is_granted('ROLE_USER')"),
         new Get(security: "is_granted('ROLE_ADMIN')"),
         new Post(security: "is_granted('ROLE_ADMIN')"),
         new Put(security: "is_granted('ROLE_ADMIN')"),
