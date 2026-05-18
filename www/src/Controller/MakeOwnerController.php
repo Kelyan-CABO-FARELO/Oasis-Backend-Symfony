@@ -36,12 +36,36 @@ class MakeOwnerController extends AbstractController
             return $this->json(['message' => 'Ce bien n\'existe pas.'], 404);
         }
 
-        // 🛡️ VERROU : On vérifie si le bien n'est pas déjà vendu
+        // 🛡️ VERROU : On vérifie si le bien n'est pas déjà vendu ET que son contrat n'est pas expiré
         foreach ($product->getUser() as $existingUser) {
             if ($existingUser->isOwner()) {
-                return $this->json([
-                    'message' => 'Ce bien est déjà la propriété de ' . $existingUser->getFirstname() . ' ' . $existingUser->getLastname()
-                ], 403);
+                $contractStart = $product->getContractDate();
+                if ($contractStart) {
+                    $contractEnd = new \DateTime($contractStart->format('Y') . '-10-10');
+                    if ($contractStart > $contractEnd) {
+                        $contractEnd->modify('+1 year');
+                    }
+                    $duration = $product->getDuration() ?? 1;
+                    if ($duration > 1) {
+                        $yearsToAdd = $duration - 1;
+                        $contractEnd->modify("+$yearsToAdd years");
+                    }
+                    
+                    if (new \DateTime() <= $contractEnd) {
+                        return $this->json([
+                            'message' => 'Ce bien est déjà sous contrat actif avec ' . $existingUser->getFirstname() . ' ' . $existingUser->getLastname()
+                        ], 403);
+                    } else {
+                        // Le contrat est expiré, on dissocie l'ancien propriétaire pour qu'il n'y ait pas multipropriété
+                        $existingUser->removeProduct($product);
+                        $em->persist($existingUser);
+                    }
+                } else {
+                    // Si pas de contrat défini sur le produit mais associé à un proprio
+                    return $this->json([
+                        'message' => 'Ce bien est déjà la propriété de ' . $existingUser->getFirstname() . ' ' . $existingUser->getLastname()
+                    ], 403);
+                }
             }
         }
 
